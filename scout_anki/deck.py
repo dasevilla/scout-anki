@@ -29,6 +29,7 @@ def create_merit_badge_model(model_name: str) -> genanki.Model:
         {"name": "Name"},
         {"name": "Description"},
         {"name": "EagleRequired"},
+        {"name": "LabNote"},
     ]
 
     # Front template (Image → Name + Description)
@@ -44,6 +45,7 @@ def create_merit_badge_model(model_name: str) -> genanki.Model:
 <div style="text-align: center;">
     <h2>{{Name}} {{#EagleRequired}}<span class="eagle-badge">🦅</span>{{/EagleRequired}}</h2>
     <p>{{Description}}</p>
+    {{#LabNote}}<p class="lab-note">{{LabNote}}</p>{{/LabNote}}
 </div>
 """
 
@@ -91,6 +93,12 @@ def create_merit_badge_model(model_name: str) -> genanki.Model:
         font-size: 0.9em;
         margin-left: 5px;
     }
+
+    .lab-note {
+        color: #6b7280;
+        font-size: 0.95em;
+        margin-top: 8px;
+    }
     """
 
     return genanki.Model(
@@ -117,14 +125,17 @@ def create_merit_badge_note(
     guid = genanki.guid_for(f"{badge_slug}|{image_basename}")
 
     # Prepare fields - put complete img tag with styling in the field
+    lab_note = "Test Lab Merit Badge" if badge.is_lab else ""
     fields = [
         f'<img src="{image_name}" style="max-width: 85%; height: auto;">',  # Image with styling
         badge.name,  # Name
         badge.description or "",  # Description
         "1" if badge.eagle_required else "",  # EagleRequired (non-empty for true)
+        lab_note,
     ]
 
-    return genanki.Note(model=model, fields=fields, guid=guid)
+    tags = ["test-lab"] if badge.is_lab else []
+    return genanki.Note(model=model, fields=fields, guid=guid, tags=tags)
 
 
 def create_merit_badge_deck(
