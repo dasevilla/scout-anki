@@ -14,6 +14,7 @@ class MeritBadge:
     image_filename: str | None = None
     source: str | None = None
     eagle_required: bool = False
+    is_lab: bool = False
 
 
 def normalize_badge_data(data: Any) -> list[MeritBadge]:
@@ -84,6 +85,7 @@ def normalize_badge_data(data: Any) -> list[MeritBadge]:
 
         # Extract eagle required status
         eagle_required = bool(item.get("is_eagle_required", False))
+        is_lab = bool(item.get("is_lab", False))
 
         badge = MeritBadge(
             name=name,
@@ -92,6 +94,7 @@ def normalize_badge_data(data: Any) -> list[MeritBadge]:
             image_filename=image_filename,
             source="JSON",
             eagle_required=eagle_required,
+            is_lab=is_lab,
         )
         badges.append(badge)
 
