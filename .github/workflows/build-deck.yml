@@ -56,14 +56,20 @@ jobs:
 
     - name: Checkout repository
       if: steps.check-release.outputs.should-build == 'true'
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Install uv
       if: steps.check-release.outputs.should-build == 'true'
-      uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@v8.1.0
+      with:
+        version: "0.11.8"
+        enable-cache: true
+
+    - name: Set up Python
+      if: steps.check-release.outputs.should-build == 'true'
+      uses: actions/setup-python@v6
       with:
         python-version: "3.12"
-        enable-cache: true
 
     - name: Install dependencies
       if: steps.check-release.outputs.should-build == 'true'
@@ -111,14 +117,14 @@ jobs:
 
     - name: Upload deck artifact
       if: steps.check-release.outputs.should-build == 'true'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: anki-deck
         path: "*.apkg"
 
     - name: Create Release
       if: steps.check-release.outputs.should-build == 'true'
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         tag_name: ${{ steps.deck-info.outputs.release-tag }}
         name: ${{ steps.deck-info.outputs.release-name }}
