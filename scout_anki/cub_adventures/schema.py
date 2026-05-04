@@ -6,6 +6,9 @@ from pathlib import Path
 
 from ..image_utils import discover_images
 from ..log import get_logger
+from ..schema import stable_id
+
+RANK_DIRS = ("lion", "tiger", "wolf", "bear", "webelos", "arrow-of-light")
 
 
 @dataclass
@@ -26,7 +29,7 @@ class Adventure:
     @property
     def stable_id(self) -> int:
         """Generate stable ID for Anki."""
-        return abs(hash(f"adventure:{self.rank}:{self.name}")) % (2**31)
+        return stable_id(f"adventure:{self.rank}:{self.name}") % (2**31)
 
 
 def normalize_adventure_data(data: dict) -> Adventure:
@@ -40,18 +43,29 @@ def normalize_adventure_data(data: dict) -> Adventure:
     )
 
 
+def _resolve_adventure_root(directory: Path) -> Path:
+    """Return the directory that contains Cub adventure rank directories."""
+    if any((directory / rank_dir).is_dir() for rank_dir in RANK_DIRS):
+        return directory
+
+    for child_name in ("cub-adventure", "cub-scout-adventures"):
+        child = directory / child_name
+        if child.is_dir():
+            return child
+
+    return directory
+
+
 def process_adventure_directory(directory_path: str) -> tuple[list[Adventure], dict[str, Path]]:
     """Process directory for Cub Scout adventures and images."""
     logger = get_logger()
-    directory = Path(directory_path)
+    directory = _resolve_adventure_root(Path(directory_path))
 
     adventures = []
     available_images = {}
 
     # Find all adventure JSON files in rank directories
-    rank_dirs = ["lion", "tiger", "wolf", "bear", "webelos", "arrow-of-light"]
-
-    for rank_dir in rank_dirs:
+    for rank_dir in RANK_DIRS:
         rank_path = directory / rank_dir
         if not rank_path.exists():
             continue

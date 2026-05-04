@@ -13,6 +13,15 @@ from ..processor import DeckProcessor
 from .schema import MeritBadge, normalize_badge_data
 
 
+def _resolve_merit_badge_root(directory: Path) -> Path:
+    """Return the directory that contains merit badge JSON and images."""
+    for child_name in ("merit-badge", "merit-badges"):
+        child = directory / child_name
+        if child.is_dir():
+            return child
+    return directory
+
+
 class MeritBadgeProcessor(DeckProcessor):
     """Processor for merit badge decks."""
 
@@ -29,7 +38,7 @@ class MeritBadgeProcessor(DeckProcessor):
 
     def process_directory(self, directory_path: str) -> tuple[list[MeritBadge], dict[str, Path]]:
         """Process directory to find badges and images."""
-        directory = Path(directory_path)
+        directory = _resolve_merit_badge_root(Path(directory_path))
 
         # Find and process JSON files
         all_badge_data = []

@@ -21,6 +21,13 @@ make fetch-releases extract-archives build-all
 
 This downloads archives, extracts them to `extracted/` directory, and creates `.apkg` files that can be imported into Anki.
 
+The build command accepts the current Scout Archive layouts:
+
+- release archive roots where merit badge JSON/images or Cub rank directories are directly under the directory
+- combined archive roots containing `merit-badge/` and `cub-adventure/`
+- local scout-archive build roots containing `merit-badges/` and `cub-scout-adventures/`
+- any direct content root such as `build/merit-badges` or `build/cub-scout-adventures`
+
 ### Manual Usage
 
 ```bash
@@ -31,10 +38,10 @@ gh release download --repo dasevilla/scout-archive --pattern "*.tar.gz"
 mkdir -p extracted/
 for file in *.tar.gz; do tar -xzf "$file" -C extracted/; done
 
-# Generate merit badge Anki deck from extracted directory
+# Generate merit badge Anki deck from extracted directory or combined archive root
 scout-anki build merit-badges extracted/
 
-# Generate cub adventure Anki deck from extracted directory
+# Generate cub adventure Anki deck from extracted directory or combined archive root
 scout-anki build cub-adventures extracted/
 ```
 
@@ -66,7 +73,7 @@ scout-anki build DECK_TYPE DIRECTORY [OPTIONS]
 
 **Arguments:**
 - `DECK_TYPE` - Type of deck to build: `merit-badges` or `cub-adventures`
-- `DIRECTORY` - Directory containing extracted badge data and images
+- `DIRECTORY` - Directory containing extracted badge data and images, or a parent directory with a recognized Scout Archive content root
 
 **Options:**
 - `--out PATH` - Output file path (auto-generated based on deck type if not specified)
@@ -78,11 +85,13 @@ scout-anki build DECK_TYPE DIRECTORY [OPTIONS]
 
 ## How It Works
 
-1. **Reads local archive files** (.tar.gz) containing Scouting data and images
-2. **Extracts content data** from JSON files using flexible schema normalization
+1. **Reads extracted Scout Archive JSON and images** from recognized release and local build layouts
+2. **Extracts card metadata** from JSON files using flexible schema normalization
 3. **Maps content to images** using direct `image_filename` field mapping
 4. **Creates Anki deck** with stable IDs to prevent duplicates on reimport
 5. **Bundles media files** into a complete .apkg package
+
+Scout Archive requirement trees are intentionally not turned into cards. Requirement metadata such as `text`, `requirement_path`, `node_kind`, `is_container`, and `requires_response` may be present in the source JSON, but this tool uses only the top-level fields needed for image-recognition flashcards.
 
 ### Image Mapping Strategy
 
